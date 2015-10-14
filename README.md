@@ -4,6 +4,8 @@ Simon Kirkby
 tigger@interthingy.com
 20150304
 
+This repository has been moved to gb format  https://getgb.io/ , it’s cool.
+
 ## Description 
 
 Astralboot is a golang server that provides network services to boot virtual and metal machines from pxe boot.
@@ -13,9 +15,11 @@ The following services are provided
 2. TFTP , simple file transfer
 3. HTTP , for serving images and configs
 
-It pulls its data files out of [ipfs](http://ipfs.io/), which means that they are downloaded on request and then stored locally.
+It can pull its data files out of [ipfs](http://ipfs.io/), which means that they are downloaded on request and then stored locally.
 
-## Required 
+Local file serving also works with local file system folders ( see INSTRUCTIONS for details )
+
+## Required for development
 
 1. golang dev environment
 2. running ipfs node
@@ -29,13 +33,17 @@ As this server has a naive dhcp server it can be dangerous to run in an office e
 
 assumes a working golang environment.
 
->go get github.com/zignig/astralboot
+```sh
 
->cd $GOPATH/src/github.com/zignig/astralboot
+git clone github.com/zignig/astralboot
 
->go build
+cd astralboot
 
-also the ipfs service, which is currently  in alpha , is available from http://github.com/jbenet/go-ipfs
+gb build
+
+```
+
+also the ipfs service, which is currently  in alpha , is available from http://github.com/ipfs/go-ipfs
 
 will need to be installed and running 
 
@@ -46,35 +54,34 @@ Testing so far has been done on a virtual machine with two network interfaces, o
 This machine will probably need to have masquerading setup , this is not needed for astral boot , but is for the machines to access the internet.
 
 enable forwarding 
-
->echo 1 > /proc/sys/net/ipv4/ip_forward
-
+```sh
+echo 1 > /proc/sys/net/ipv4/ip_forward
+```
 make it stick 
-
->edit /etc/sysctl.conf  and change  net.ipv4.ip_forward = 1
-
+```sh
+edit /etc/sysctl.conf  and change  net.ipv4.ip_forward = 1
+```
 change the firewall 
-
->/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-
+```sh
+/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+```
 The test machines to be bootstrapped have one network interface attached to isolated VM network.
 
-Once you have the astral boot binary built, edit the config.toml file for interfaces on your virtual machines.
-
-a minimal config is
-
->ref = "QmCoolIPFSHash"
-
->interface = "eth1"
-
+The default hashes for booting are included in the git repository , put them into place by running.
+```sh
+cp refs.toml.dist refs.toml
+```
 
 It is worth noting that this will need to be run as root , dhcp, tftp and http not running on the machine
 
 Now you are good to go, run the astralboot binary
 
-1. It will grab some files from ipfs and load up the various operating system files.
-2. On the first run it will populate the leases.db file with empty ip addresses.
-3. All the services will start and it will be ready to serve.
+1. If the config.toml file does not exists it will ask some questions to set up
+2. It will grab some files from ipfs ( or local file system )and load up the various operating system files.
+3. On the first run it will populate the leases.db file with empty ip addresses.
+4. All the services will start and it will be ready to serve.
+
+Verbosity can be changed by adding -v , -vv and -vvv to the command line.
 
 Now comes the fun bit ....
 
@@ -104,10 +111,10 @@ Developing boot services, To develop modified boot services it is possible to se
 Downloading the files can be done with the following ipfs commands
 
 In the astralboot folder : 
-
->ipfs get -o=data “hash from the config file”
-
-then run astralboot with a -l ( l for larry ) flag an it will use the local file system.
+```sh
+ipfs get -o=data “hash from the refs.toml file”
+```
+If the config has IPFS = false the local file system will be used.
 
 # Development
 
@@ -115,10 +122,6 @@ all comments, patches and pull requests welcome
 
 # TODO 
 
-1. Better templating of preseed and cloudconfig
+1. Better templating of preseed 
 2. Add more operating systems
-3. Have subclasses on each operating system.
-4. Add DNS server 
-5. More stuff
-
-
+4. More stuff

@@ -1,0 +1,60 @@
+#cloud-config
+
+hostname: {{ .Name }}
+coreos:
+  etcd2:
+      name: {{ .Name }}
+      advertise-client-urls: http://{{ .IP }}:2379
+      initial-advertise-peer-urls: http://{{ .IP }}:2380
+      listen-peer-urls: http://{{ .IP }}:2380
+      listen-client-urls: http://0.0.0.0:2379
+      initial-cluster: {{ range $index , $element := .Cluster.etcd.Leases}}{{ if $index}},{{end}}{{$element.Name}}=http://{{ $element.IP }}:2380{{ end }}
+      initial-cluster-state: new
+  fleet:
+    metadata: "role={{ .Lease.Class }}"
+  units:
+    - name: etcd2.service
+      command: start
+    - name: fleet.service
+      command: start
+# Spawn auto launch system
+{{ if .Config.Spawn }}
+    - name: fleet.socket
+      drop-ins:
+        - name: 30-ListenStream.conf
+          content: |
+            [Socket]
+            ListenStream=127.0.0.1:9876
+            Service=fleet.service
+            [Install]
+            WantedBy=sockets.target
+    - name: get_keys.service
+      command: start
+      content: |
+        [Unit]
+        After=rkt-metadata.service
+        Requires=rkt-metadata.service
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c "/usr/bin/echo yes | /usr/bin/rkt trust --insecure-allow-http --prefix=astralboot http://{{ .BaseIP }}/rocket/astral.gpg"
+    - name: spawn_launch.service
+      command: start
+      content: |
+        [Unit]
+        After=multi-user.target
+        Requires=multi-user.target
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/sleep 10
+        ExecStart=/usr/bin/fleetctl start /tmp/spawn.service
+write_files:
+  - path: /tmp/spawn.service
+    content: |
+      [Unit]
+      Description=spawn service
+      [Service]
+      ExecStart=/usr/bin/rkt --insecure-skip-verify run --set-env SPAWN_SOURCE={{ .BaseIP }} http://{{ .BaseIP }}/images/{{ .BaseIP }}/rocket/spawn-latest-linux-amd64.aci
+      [X-Fleet]
+      MachineMetadata=role=etcd
+{{ end }}
+
