@@ -1,12 +1,11 @@
-#Astral Boot
+# astralboot
 
-Simon Kirkby 
-tigger@interthingy.com
-20150304
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
+[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
+[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-This repository has been moved to gb format  https://getgb.io/ , it’s cool.
-
-## Description 
+> a low level boot server that deploys directly out of ipfs
 
 Astralboot is a golang server that provides network services to boot virtual and metal machines from pxe boot.
 The following services are provided
@@ -19,6 +18,35 @@ It can pull its data files out of [ipfs](http://ipfs.io/), which means that they
 
 Local file serving also works with local file system folders ( see INSTRUCTIONS for details )
 
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+  - [Required for development](#required-for-development)
+  - [Warning](#warning)
+  - [Setup](#setup)
+- [Running the server](#running-the-server)
+- [Changing the services](#changing-the-services)
+- [TODO](#todo)
+- [Contribute](#contribute)
+- [License](#license)
+
+# Install
+
+Assumes a working golang environment.
+
+```sh
+git clone github.com/zignig/astralboot
+
+cd astralboot
+
+gb build
+```
+
+You will also need to have the [go-ipfs implemenation](http://github.com/ipfs/go-ipfs) installed, and a daemon running.
+
+# Usage
+
 ## Required for development
 
 1. golang dev environment
@@ -27,27 +55,9 @@ Local file serving also works with local file system folders ( see INSTRUCTIONS 
 
 ## Warning
 
-As this server has a naive dhcp server it can be dangerous to run in an office environment. Running this server can interfere with normal network services. 
+As this server has a naive dhcp server it can be dangerous to run in an office environment. Running this server can interfere with normal network services.
 
-## Installation
-
-assumes a working golang environment.
-
-```sh
-
-git clone github.com/zignig/astralboot
-
-cd astralboot
-
-gb build
-
-```
-
-also the ipfs service, which is currently  in alpha , is available from http://github.com/ipfs/go-ipfs
-
-will need to be installed and running 
-
-## Setup 
+## Setup
 
 Testing so far has been done on a virtual machine with two network interfaces, one on a home network and the other an isolated VM network.
 
@@ -103,7 +113,7 @@ Debian will be fairly quick , coreos will take some time as the .gz file is 165 
 
 To precache the files into ipfs, run  ipfs refs -r HashFromConfigFile and it will download everything
 
-# Changing the Services
+# Changing the services
 
 As the server boots it will show an implied config , this shows possible entries to the config file to change.
 
@@ -116,12 +126,16 @@ ipfs get -o=data “hash from the refs.toml file”
 ```
 If the config has IPFS = false the local file system will be used.
 
-# Development
+# TODO
 
-all comments, patches and pull requests welcome
-
-# TODO 
-
-1. Better templating of preseed 
+1. Better templating of preseed
 2. Add more operating systems
 4. More stuff
+
+# Contribute
+
+All comments, patches and pull requests welcome.
+
+# License
+
+MIT
