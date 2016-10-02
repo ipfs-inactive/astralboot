@@ -43,7 +43,7 @@ gb build
 
 ```
 
-also the ipfs service, which is currently  in alpha , is available from http://github.com/ipfs/go-ipfs
+also the ipfs service, which is currently  in alpha , is available from https://github.com/ipfs/go-ipfs
 
 will need to be installed and running 
 
